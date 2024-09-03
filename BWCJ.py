@@ -6,6 +6,7 @@
 
 import os
 import requests
+import datetime
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 # import CHERWIN_TOOLS
 # 禁用安全请求警告
@@ -66,7 +67,8 @@ class RUN:
         }
         self.s.headers.update(self.headers)
         self.appid = 'wxafec6f8422cb357b'
-        self.activity_id='947079313798000641'
+        self.activity_id = '947079313798000641'
+        self.store_id = '49006'
 
     def personal_info(self):
         personal_info_valid = False
@@ -104,7 +106,7 @@ class RUN:
 
     def user_sign_statistics(self):
         try:
-
+            timestamp=int(datetime.datetime.now().timestamp())
             json_data = {
                 'activityId': self.activity_id,
                 'appid': self.appid
@@ -134,9 +136,14 @@ class RUN:
 
     def take_part_in_sign(self):
         try:
+            timestamp = int(datetime.datetime.now().timestamp())
+            user_id = self.customer_points_flow()
             json_data = {
                 'activityId': self.activity_id,
-                'appid': self.appid
+                'appid': self.appid,
+                'storeId': self.store_id,
+                'timestamp': timestamp,
+                'signature': CHERWIN_TOOLS.BWCJ_SIGN(self.activity_id, self.store_id, timestamp, user_id)
             }
             response = self.s.post('https://webapi.qmai.cn/web/cmk-center/sign/takePartInSign', json=json_data)
             result = response.json()
@@ -189,6 +196,43 @@ class RUN:
         except Exception as e:
             print(e)
             return False
+
+    def customer_points_flow(self):
+        try:
+            json_data = {
+                'appid': self.appid,
+                'pageNo': 1,
+                'pageSize': 1,
+            }
+
+            response = self.s.post('https://webapi2.qmai.cn/web/mall-apiserver/integral/user/page/customer-points-flow', json=json_data)
+            result = response.json()
+            status_code = response.status_code
+
+            if result.get('code', status_code) == 0:
+                data = result.get('data', {})
+                data_list = data.get('data', [])
+                
+                if data_list:
+                    userId = data_list[0].get('customerId', None)
+                    if userId:
+                        Log(f'获取到的userId: {userId}')
+                        return userId
+                    else:
+                        Log('获取userId失败: 数据中不包含customerId')
+                        return None
+                else:
+                    Log('获取userId失败: 数据列表为空')
+                    return None
+            else:
+                message = result.get('message', '')
+                Log(f'获取userId失败: {message}')
+                return None
+
+        except Exception as e:
+            print(e)
+            return None
+
 
     def main(self):
         if not self.personal_info() :
@@ -290,4 +334,4 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
         for index, infos in enumerate(tokens):
             run_result = RUN(infos, index).main()
             if not run_result: continue
-        if send: send(f'{APP_NAME}挂机通知', send_msg + TIPS_HTML)
+        if send: send(f'{APP_NAME}挂机通知', send_msg)
