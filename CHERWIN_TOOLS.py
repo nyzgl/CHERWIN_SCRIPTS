@@ -11,7 +11,7 @@ import requests
 from http import HTTPStatus
 from datetime import datetime
 
-NOW_TOOLS_VERSION = '2024.07.24'
+NOW_TOOLS_VERSION = '2024.06.30'
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
 
@@ -142,6 +142,9 @@ def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_fi
             return False
     except requests.exceptions.RequestException as e:
         print(f'发生网络错误：{e}')
+        # server_base_url = f"https://py.cherwin.cn/{APP_NAME}/"
+        # server_script_url = f"{server_base_url}{script_filename}"
+        # CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, APP_NAME=APP_NAME)
     except Exception as e:
         print(f'发生未知错误：{e}')
     return False  # 返回 False 表示没有进行更新操作
@@ -267,6 +270,7 @@ def ENV_SPLIT(input_str):
         return ([out_str])
 
 
+
 # 使用导入的模块进行验证码识别
 def CAPCODE(captcha_slider, captcha_bg):
     ddddocr = import_or_install('ddddocr')
@@ -307,7 +311,8 @@ def wxpusher(UID, msg, title, help=False):
         # tips = TIPS_HTML.replace("\n", "<br>")
         data = {
             "appToken": WXPUSHER,
-            "content": f'{title}<br>{msg}<br>{TIPS_HTML}',
+            # "content": f'{title}<br>{msg}<br>{TIPS_HTML}',
+            "content": f'{title}<br>{msg}',
             # "summary": msg[:99],  # 该参数可选，默认为 msg 的前10个字符
             "summary": title,
             "contentType": 2,
@@ -336,9 +341,10 @@ def RESTART_SCRIPT(RESTART_SCRIPT_NAME):
 def CHECK():
     global CHERWIN_SCRIPT_CONFIG
     print('>>>>>>>开始获取版本信息...')
-    baseurl = 'https://gitee.com/cherwin/CHERWIN_SCRIPTS/raw/main/'
+    baseurl = 'http://125.91.104.15:9991/msgr/'
+    # baseurl = 'https://py.cherwin.cn/'
     TOOLS_NAME = 'CHERWIN_TOOLS.py'
-    server_script_url = f'https://gitee.com/cherwin/CHERWIN_SCRIPTS/raw/main/{TOOLS_NAME}'
+    server_script_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{TOOLS_NAME}'
     try:
         response = requests.get(f'{baseurl}CHERWIN_SCRIPT_CONFIG.json', verify=False)
         response.encoding = 'utf-8'
@@ -453,6 +459,15 @@ def HXEK_SIGN(memberId, appid):
     sign = md5_hash.hexdigest()
     return sign, random_int, timestamp
 
+def BWCJ_SIGN(activityId, storeId, timestamp, userId):
+    # activityId反转
+    key = activityId[::-1]
+    # 构建待加密字符串
+    raw_string = f"activityId={activityId}&sellerId={storeId}&timestamp={timestamp}&userId={userId}&key={key}"
+    # 使用MD5进行加密转大写
+    signature = hashlib.md5(raw_string.encode('utf-8')).hexdigest().upper()
+    return signature
+
 
 def KPL_SIGN(url, params):
     secret_key = "d19b9f22f5aac41ac0b56a1947f82bce"
@@ -497,7 +512,7 @@ def get_ip():
     
 def main(APP_NAME, local_script_name, ENV_NAME, local_version, need_invite=False):
     global APP_INFO, TIPS, TIPS_HTML
-    git_url = f'https://gitee.com/cherwin/CHERWIN_SCRIPTS/raw/main/{local_script_name}'
+    git_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{local_script_name}'
     if CHECK():
         APP_INFO = CHERWIN_SCRIPT_CONFIG.get("APP_CONFIG", {}).get(ENV_NAME, {})
         # print(APP_INFO)
