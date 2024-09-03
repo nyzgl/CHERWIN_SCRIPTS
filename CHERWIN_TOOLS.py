@@ -270,6 +270,7 @@ def ENV_SPLIT(input_str):
         return ([out_str])
 
 
+
 # 使用导入的模块进行验证码识别
 def CAPCODE(captcha_slider, captcha_bg):
     ddddocr = import_or_install('ddddocr')
@@ -310,7 +311,8 @@ def wxpusher(UID, msg, title, help=False):
         # tips = TIPS_HTML.replace("\n", "<br>")
         data = {
             "appToken": WXPUSHER,
-            "content": f'{title}<br>{msg}<br>{TIPS_HTML}',
+            # "content": f'{title}<br>{msg}<br>{TIPS_HTML}',
+            "content": f'{title}<br>{msg}',
             # "summary": msg[:99],  # 该参数可选，默认为 msg 的前10个字符
             "summary": title,
             "contentType": 2,
@@ -339,7 +341,8 @@ def RESTART_SCRIPT(RESTART_SCRIPT_NAME):
 def CHECK():
     global CHERWIN_SCRIPT_CONFIG
     print('>>>>>>>开始获取版本信息...')
-    baseurl = 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/'
+    baseurl = 'http://125.91.104.15:9991/msgr/'
+    # baseurl = 'https://py.cherwin.cn/'
     TOOLS_NAME = 'CHERWIN_TOOLS.py'
     server_script_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{TOOLS_NAME}'
     try:
@@ -455,6 +458,15 @@ def HXEK_SIGN(memberId, appid):
     md5_hash = hashlib.md5(raw_string.encode())
     sign = md5_hash.hexdigest()
     return sign, random_int, timestamp
+
+def BWCJ_SIGN(activityId, storeId, timestamp, userId):
+    # activityId反转
+    key = activityId[::-1]
+    # 构建待加密字符串
+    raw_string = f"activityId={activityId}&sellerId={storeId}&timestamp={timestamp}&userId={userId}&key={key}"
+    # 使用MD5进行加密转大写
+    signature = hashlib.md5(raw_string.encode('utf-8')).hexdigest().upper()
+    return signature
 
 
 def KPL_SIGN(url, params):
